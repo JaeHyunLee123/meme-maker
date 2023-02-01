@@ -1,38 +1,83 @@
 const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 800;
-canvas.height = 800;
+const lineWidth = document.getElementById("line-width");
+const color = document.getElementById("color");
+const colorOptions = Array.from(
+  document.getElementsByClassName("color-option")
+);
+const modeBtn = document.getElementById("mode-btn");
+const initializeBtn = document.getElementById("initialize-btn");
+const eraserBtn = document.getElementById("eraser-btn");
 
-const armWidth = 30;
-const armHeight = 200;
+canvas.width = 600;
+canvas.height = 600;
+ctx.lineWidth = lineWidth.value;
 
-const bodyWidth = 130;
-const bodyHeight = 400;
+let isPainting = false;
+let isFilling = false;
 
-const headRadius = 80;
-const eyeRadius = 15;
-const betweenEye = 30;
-const mouthRadius = 40;
+const onMove = (event) => {
+  if (isPainting) {
+    ctx.lineTo(event.offsetX, event.offsetY);
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  ctx.moveTo(event.offsetX, event.offsetY);
+};
 
-ctx.rect(300 - armWidth / 2, 300, armWidth, armHeight);
-ctx.rect(400 - bodyWidth / 2, 300, bodyWidth, bodyHeight);
-ctx.rect(500 - armWidth / 2, 300, armWidth, armHeight);
+const startPainting = (event) => {
+  isPainting = true;
+};
 
-ctx.arc(400, 200, headRadius, 0, 2 * Math.PI);
-ctx.fill();
+const canclePainting = (event) => {
+  isPainting = false;
+};
 
-ctx.beginPath();
-ctx.arc(400, 210, mouthRadius, 0, Math.PI);
-ctx.fillStyle = "red";
-ctx.fill();
+canvas.addEventListener("mousemove", onMove);
+canvas.addEventListener("mousedown", startPainting);
+canvas.addEventListener("mouseup", canclePainting);
+canvas.addEventListener("mouseleave", canclePainting);
+canvas.addEventListener("click", () => {
+  if (isFilling) {
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+});
 
-ctx.beginPath();
-ctx.arc(400 - betweenEye, 180, eyeRadius, Math.PI, 2 * Math.PI);
-ctx.fillStyle = "yellow";
-ctx.fill();
+lineWidth.addEventListener("change", () => {
+  ctx.lineWidth = lineWidth.value;
+});
 
-ctx.beginPath();
-ctx.arc(400 + betweenEye, 180, eyeRadius, Math.PI, 2 * Math.PI);
-ctx.fillStyle = "green";
-ctx.fill();
+color.addEventListener("change", () => {
+  ctx.strokeStyle = color.value;
+  ctx.fillStyle = color.value;
+});
+
+colorOptions.forEach((colour) =>
+  colour.addEventListener("click", (event) => {
+    ctx.strokeStyle = event.target.dataset.color;
+    ctx.fillStyle = event.target.dataset.color;
+    color.value = event.target.dataset.color;
+  })
+);
+
+modeBtn.addEventListener("click", () => {
+  if (isFilling) {
+    isFilling = false;
+    modeBtn.innerText = "Draw";
+  } else {
+    isFilling = true;
+    modeBtn.innerText = "Fill";
+  }
+});
+
+initializeBtn.addEventListener("click", () => {
+  ctx.fillStyle = "white";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+});
+
+eraserBtn.addEventListener("click", () => {
+  ctx.strokeStyle = "white";
+  isFilling = false;
+  modeBtn.innerText = "Draw";
+});
